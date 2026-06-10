@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useFormState } from "react-dom";
 import { Trash2, Pencil } from "lucide-react";
 import { createPin, deletePin, updatePin } from "./actions";
@@ -7,10 +7,15 @@ import { createPin, deletePin, updatePin } from "./actions";
 export default function PinClient({ pins }) {
   const [editingPin, setEditingPin] = useState(null);
 
+  const createFormRef = useRef(null);
   const [createState, createAction] = useFormState(async (prev, formData) => {
     const result = await createPin(formData);
     return result;
   }, null);
+
+  useEffect(() => {
+    if (createState?.success) createFormRef.current?.reset();
+  }, [createState]);
 
   const [updateState, updateAction] = useFormState(async (prev, formData) => {
     const result = await updatePin(editingPin.id, formData);
@@ -48,7 +53,7 @@ export default function PinClient({ pins }) {
         {/* POST Form */}
         <div className="rounded-2xl p-6" style={{ background: "rgba(255,255,255,0.06)", backdropFilter: "blur(16px)", border: "1px solid rgba(139,92,246,0.3)", boxShadow: "0 8px 32px rgba(37,99,235,0.15)" }}>
           <h2 className="text-lg font-bold mb-4" style={sectionGradient}>Create a Pin</h2>
-          <form action={createAction} className="space-y-3">
+          <form ref={createFormRef} action={createAction} className="space-y-3">
             {["title", "description", "type", "content"].map((field) => (
               <input
                 key={field}
